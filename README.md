@@ -1,4 +1,3 @@
-```markdown
 # Stutter Detection Project
 
 ## Table of Contents
@@ -123,4 +122,3 @@ You likely need to run both the backend and frontend servers.
         This script attempts to run the frontend (`npm run dev`), the backend (`python app.py` in the `Backend` directory), and a Node.js server (`node server/server.cjs`) simultaneously. Ensure the paths and commands within the `package.json` script are correct for your setup.
 
 You can now access the application through the frontend URL (usually `http://localhost:5173`).
-```
