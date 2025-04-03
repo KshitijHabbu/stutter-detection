@@ -40,7 +40,7 @@ def analyze_audio_thread(filepath, task_id, audio_bytes):
         # Store audio in MongoDB immediately while ensuring "result" exists
         tasks_collection.update_one(
             {"task_id": task_id},
-            {"$set": {"result.audio": Binary(audio_bytes), "result.exists": True}},  # Ensure result exists
+            {"$set": {"result.exists": True}},  # Ensure result exists
             upsert=True
         )       
 
@@ -51,14 +51,13 @@ def analyze_audio_thread(filepath, task_id, audio_bytes):
         # Read visualization image
         with open(result["visualization_path"], "rb") as img_file:
             img_base64 = base64.b64encode(img_file.read()).decode("utf-8")
-        audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
 
         # Prepare result for storage
         result_data = {
             "task_id": task_id,
             "status": "completed",
             "timestamp": datetime.now(),
-            "result": {**result, "visualization": img_base64, "audio": str(audio_base64)},
+            "result": {**result, "visualization": img_base64},
         }
         del result_data["result"]["visualization_path"]
 

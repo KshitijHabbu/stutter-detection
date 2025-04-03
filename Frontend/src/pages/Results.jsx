@@ -32,8 +32,7 @@ import {
   FileText,
   Repeat,
   Pause,
-  Volume2,
-  Play,
+  Volume2
 } from "lucide-react";
 import {
   Accordion,
@@ -50,11 +49,6 @@ export function Results() {
   const [results, setResults] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  // Audio player state
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const audioRef = useRef(null);
 
   const location = useLocation();
   const taskId = new URLSearchParams(location.search).get("task_id");
@@ -117,10 +111,6 @@ export function Results() {
             ? `data:image/png;base64,${resultData.visualization}`
             : null;
 
-          const audioSrc = resultData.audio
-            ? `data:audio/wav;base64,${resultData.audio}`
-            : null;
-
           setResults({
             spectrogram: visualizationSrc,
             transcription: resultData.transcription || "Transcription not available.",
@@ -129,7 +119,6 @@ export function Results() {
             overallScore: resultData.fluency_score ?? 0,
             severity: resultData.severity || "Not Specified",
             passageComparison,
-            audio: audioSrc,
           });
           setIsLoading(false);
           setError(null); // Clear previous errors on success
@@ -172,67 +161,8 @@ export function Results() {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-      }
     };
   }, [taskId]); // Rerun effect if taskId changes
-
-  // --- Audio Player Logic ---
-
-  // Toggle Play/Pause
-  const toggleAudio = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play().catch((e) => console.error("Play error:", e));
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  // Update state when audio metadata loads (duration)
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
-    }
-  };
-
-  // Update current time state as audio plays
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-    }
-  };
-
-  // Reset play state when audio ends
-  const handleAudioEnded = () => {
-    setIsPlaying(false);
-    setCurrentTime(0); // Reset time to beginning
-  };
-
-  // Handle seeking when the *native* range input value changes
-  const handleSeek = (event) => {
-    if (audioRef.current) {
-      const newTime = parseFloat(event.target.value); // Get value from event target
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime); // Update state immediately for responsiveness
-    }
-  };
-
-  // Helper function to format time
-  const formatTime = (seconds) => {
-     if (isNaN(seconds) || !isFinite(seconds)) { // Added isFinite check
-      return "00:00";
-    }
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-  // --- End Audio Player Logic ---
 
   // ... (getStutterIcon, getStutterColor functions remain the same) ...
     // Helper function to get icon for stutter type
@@ -298,77 +228,6 @@ export function Results() {
       </div>
     );
   }
-
-
-  // --- Common Audio Player Component using native input range ---
-  const renderAudioPlayer = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl md:text-2xl font-semibold flex items-center">
-          <FileAudio className="mr-2 h-5 w-5 md:h-6 md:w-6 text-primary" />
-          {isPatient ? "Your Recording" : "Original Recording"}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Hidden HTML5 Audio element controlled by React state and refs */}
-        <audio
-          ref={audioRef}
-          src={results.audio}
-          onLoadedMetadata={handleLoadedMetadata}
-          onTimeUpdate={handleTimeUpdate}
-          onEnded={handleAudioEnded}
-          preload="metadata"
-          className="hidden"
-        />
-        {results.audio ? (
-             <div className="flex items-center space-x-2 md:space-x-4 w-full">
-                 {/* Play/Pause Button */}
-                 <Button // Using Shadcn button still
-                     onClick={toggleAudio}
-                     variant="ghost"
-                     size="icon"
-                     className="rounded-full flex-shrink-0"
-                     disabled={duration === 0} // Disable only if duration isn't loaded
-                     aria-label={isPlaying ? "Pause" : "Play"}
-                 >
-                     {isPlaying ? (
-                     <Pause className="h-5 w-5 md:h-6 md:w-6" />
-                     ) : (
-                     <Play className="h-5 w-5 md:h-6 md:w-6" />
-                     )}
-                 </Button>
-
-                 {/* Current Time */}
-                 <span className="text-xs md:text-sm text-muted-foreground w-10 md:w-12 text-right tabular-nums flex-shrink-0">
-                     {formatTime(currentTime)}
-                 </span>
-
-                 {/* Native HTML Range Input for Progress Bar / Scrubber */}
-                 <input
-                     type="range"
-                     min="0"
-                     max={duration || 0} // Set max to duration, default 0 if not loaded
-                     step="0.1" // Fine-grained seeking
-                     value={currentTime}
-                     onChange={handleSeek} // Use the updated handler
-                     disabled={duration === 0} // Disable if duration isn't loaded
-                     className="flex-grow h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50" // Basic styling + accent color
-                     aria-label="Audio progress"
-                 />
-
-                 {/* Total Duration */}
-                 <span className="text-xs md:text-sm text-muted-foreground w-10 md:w-12 text-left tabular-nums flex-shrink-0">
-                     {formatTime(duration)}
-                 </span>
-             </div>
-        ) : (
-           <p className="text-sm text-muted-foreground text-center">Audio recording not available for this analysis.</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-  // --- End Common Audio Player Component ---
-
 
   // --- Patient View ---
   if (isPatient) {
@@ -461,11 +320,6 @@ export function Results() {
                <p className="text-xs md:text-sm text-muted-foreground">A higher score generally indicates smoother speech in this recording.</p>
             </CardContent>
           </Card>
-        </motion.div>
-
-        {/* Audio Player */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-            {renderAudioPlayer()}
         </motion.div>
 
         {/* Back Button */}
@@ -618,7 +472,7 @@ export function Results() {
                         </span>
                       </div>
                        {event.text && (
-                        <p className="text-xs mt-1 italic text-gray-600">Context: "{event.text}"</p>
+                        <p className="text-xs mt-1 italic text-gray-600">Context: {event.text}</p>
                       )}
                       {event.count > 1 && (
                         <p className="text-xs">Count: {event.count}</p>
@@ -653,16 +507,7 @@ export function Results() {
             <CardContent>
                <div className="space-y-4">
                 {/* Summary Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center p-3 md:p-4 bg-muted rounded-lg">
-                     <div>
-                          <p className="text-xs md:text-sm font-medium text-muted-foreground">Similarity</p>
-                          <p className="text-xl md:text-2xl font-bold text-primary">
-                               {results.passageComparison.similarity_score !== undefined
-                                   ? `${(results.passageComparison.similarity_score * 100).toFixed(1)}%`
-                                   : "N/A"
-                               }
-                          </p>
-                     </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center p-3 md:p-4 bg-muted rounded-lg">
                      <div>
                          <p className="text-xs md:text-sm font-medium text-muted-foreground">Word Count</p>
                          <p className="text-sm md:text-base font-semibold">
@@ -751,11 +596,6 @@ export function Results() {
                <p className="text-xs md:text-sm text-muted-foreground">Represents overall speech fluency based on disfluency analysis.</p>
             </CardContent>
           </Card>
-        </motion.div>
-
-        {/* Audio Player - Placed earlier for SLP */}
-        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          {renderAudioPlayer()} {/* Uses the common audio player with native input */}
         </motion.div>
 
 

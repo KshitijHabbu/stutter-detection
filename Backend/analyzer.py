@@ -677,9 +677,7 @@ class SpeechAnalyzer:
             prolongation_weight = 1.2
             block_weight = 1.5
             filler_weight = 0.5
-            discrepancy_weight = (
-                0.2  # Further reduced weight as this is a secondary indicator
-            )
+            discrepancy_weight = 1.5
 
             # Calculate weighted stutter events
             weighted_stutters = (
