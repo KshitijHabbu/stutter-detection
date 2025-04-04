@@ -151,7 +151,7 @@ class StutterDetector:
 
         # Analyze MFCC patterns for repetitions
         mfcc = features.mfcc
-        frame_length = int(0.1 * 100)  # 100ms window at 10ms hop
+        frame_length = int(0.1 * 300)  # 100ms window at 10ms hop
 
         for i in range(0, len(mfcc[0]) - frame_length, int(frame_length / 2)):
             # Look for repetitive patterns in consecutive frames
@@ -205,7 +205,7 @@ class StutterDetector:
         energy = features.energy
 
         # Window size for prolongation detection (200ms)
-        window_size = int(0.2 / 0.01)  # 0.01s is the hop length
+        window_size = int(0.15 / 0.01)  # 0.01s is the hop length
 
         for i in range(0, len(energy) - window_size, int(window_size / 4)):
             pitch_window = pitch[i : i + window_size]
@@ -289,7 +289,7 @@ class StutterDetector:
         zcr = features.zero_crossing_rate
 
         # Window size for block detection (300ms)
-        window_size = int(0.3 / 0.01)  # 0.01s is the hop length
+        window_size = int(0.4`` / 0.01)  # 0.01s is the hop length
 
         for i in range(0, len(energy) - window_size, int(window_size / 2)):
             energy_window = energy[i : i + window_size]

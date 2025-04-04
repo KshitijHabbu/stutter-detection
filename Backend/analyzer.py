@@ -27,7 +27,7 @@ class SpeechAnalyzer:
     def __init__(self):
         """Initialize all analysis components."""
         try:
-            self.transcriber = TranscriptionAnalyzer(model_size="medium")
+            self.transcriber = TranscriptionAnalyzer(model_size="large")
             self.visualizer = SpeechVisualizer()
             logger.info("Speech Analyzer initialized successfully")
         except Exception as e:
@@ -110,7 +110,7 @@ class SpeechAnalyzer:
         all_events = (
             result.repetitions
             + result.fillers
-            + [e for e in result.pronunciation_errors if e.get("confidence", 0) > 0.6]
+            + [e for e in result.pronunciation_errors if e.get("confidence", 0) > 0.4]
             + [s for s in result.silences if s.get("is_block", False)]
         )
 

@@ -41,6 +41,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"; // Assuming you still use Shadcn Accordion
 import { useAuth } from "../contexts/AuthContext";
+import AnalysisLoadingScreen from "@/components/AnalysisLoadingScreen"
 
 // Define the API base URL
 const API_BASE_URL = "http://localhost:5000";
@@ -217,16 +218,8 @@ export function Results() {
     );
   }
 
-  // Loading state display
-  if (isLoading || !results) { // Show loading if explicitly loading OR if results aren't populated yet
-    return (
-      <div className="flex flex-col items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary mb-4"></div>
-        <p className="text-lg font-medium">Analyzing your speech data...</p>
-        <p className="text-sm text-muted-foreground mt-2">Please wait, this may take a moment...</p>
-        {error && <p className="text-sm text-red-500 mt-4">{error}</p>} {/* Show retrying errors here */}
-      </div>
-    );
+  if (isLoading || !results) {
+    return <AnalysisLoadingScreen error={error} />
   }
 
   // --- Patient View ---
@@ -248,6 +241,28 @@ export function Results() {
           Stuttering Severity:{" "}
           <span className="text-primary">{results.severity}</span>
         </div>
+
+        {/* Severity Classification and Recommendation */}
+        {["Moderate", "Severe", "Very Severe"].includes(results.severity) ? (
+          <div className="mt-4 bg-red-100 border border-red-300 text-red-800 p-4 rounded-xl shadow-sm text-center">
+            <p className="text-md md:text-lg font-medium">
+              Based on the analysis, your stuttering severity is <strong>{results.severity}</strong>.
+            </p>
+            <p className="mt-1 text-sm md:text-base">
+              It's recommended that you consult a certified Speech-Language Pathologist (SLP) for further evaluation and support.
+            </p>
+          </div>
+        ) : results.severity === "Mild" ? (
+          <div className="mt-4 bg-green-100 border border-green-300 text-green-800 p-4 rounded-xl shadow-sm text-center">
+            <p className="text-md md:text-lg font-medium">
+              Your stuttering severity is <strong>Mild</strong>.
+            </p>
+            <p className="mt-1 text-sm md:text-base">
+              You’re doing well! Regular practice can help further reduce disfluencies.
+            </p>
+          </div>
+        ) : null}
+
 
         {/* Transcription */}
         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
@@ -467,7 +482,7 @@ export function Results() {
                           {event.subtype ? `(${event.subtype})` : ""}
                         </h4>
                         <span className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
-                          {formatTime(event.start)} - {formatTime(event.end)} (
+                           (
                           {event.duration?.toFixed(2)}s) {/* Optional chaining */}
                         </span>
                       </div>

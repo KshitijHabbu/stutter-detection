@@ -71,36 +71,21 @@ class SpeechVisualizer:
             Matplotlib figure with multiple subplots.
         """
         try:
-            if not events or len(events) < 2:
-                fig, axes = plt.subplots(
-                    3, 1, figsize=(15, 14), constrained_layout=True
-                )
+            fig, axes = plt.subplots(
+                4, 1, figsize=(15, 14), constrained_layout=True
+            )
 
-                # 1. Waveform with stutter markers
-                self._plot_waveform(axes[0], audio_data, sample_rate, events)
+            # 1. Waveform with stutter markers
+            self._plot_waveform(axes[0], audio_data, sample_rate, events)
 
-                # 2. Spectrogram
-                self._plot_spectrogram(axes[1], audio_data, sample_rate)
+            # 2. Spectrogram
+            self._plot_spectrogram(axes[1], audio_data, sample_rate)
 
-                # 3. Word timing and confidence plot
-                self._plot_word_timing(axes[2], features)
+            # 3. Word timing and confidence plot
+            self._plot_word_timing(axes[2], features)
 
-            else:
-                fig, axes = plt.subplots(
-                    4, 1, figsize=(15, 14), constrained_layout=True
-                )
-
-                # 1. Waveform with stutter markers
-                self._plot_waveform(axes[0], audio_data, sample_rate, events)
-
-                # 2. Spectrogram
-                self._plot_spectrogram(axes[1], audio_data, sample_rate)
-
-                # 3. Word timing and confidence plot
-                self._plot_word_timing(axes[2], features)
-
-                # 4. Event distribution graph
-                self._plot_event_distribution(axes[3], events)
+            # 4. Event distribution graph
+            self._plot_event_distribution(axes[3], events)
 
             return fig
 
