@@ -252,14 +252,14 @@ export function Results() {
               It's recommended that you consult a certified Speech-Language Pathologist (SLP) for further evaluation and support.
             </p>
           </div>
-        ) : results.severity === "Mild" ? (
+        ) : ["Mild", "Very Mild"].includes(results.severity) ? (
           <div className="mt-4 bg-green-100 border border-green-300 text-green-800 p-4 rounded-xl shadow-sm text-center">
             <p className="text-md md:text-lg font-medium">
-              Your stuttering severity is <strong>Mild</strong>.
+              Your stuttering severity is <strong>{results.severity}</strong>.
             </p>
             <p className="mt-1 text-sm md:text-base">
               You’re doing well! Regular practice can help further reduce disfluencies.
-            </p>
+            </p> 
           </div>
         ) : null}
 

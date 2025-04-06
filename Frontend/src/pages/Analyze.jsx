@@ -299,7 +299,7 @@ export function Analyze() {
                   >
                     <div className="flex justify-between items-center">
                       <div>
-                        <p className="font-medium">Task ID: {task.task_id}</p>
+                        <p className="font-medium">Patient ID: {task.task_id}</p>
                         <p className="text-sm text-muted-foreground">
                           {new Date(task.timestamp).toLocaleString()}
                         </p>
