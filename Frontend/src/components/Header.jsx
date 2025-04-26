@@ -35,7 +35,7 @@ function Header() {
               <img src="/Images/viit-logo.png" alt="VIIT Logo" className="h-10 w-auto object-contain" />
             </div>
             <div className="h-8 flex items-center justify-center">
-              <img src="/Images/dassault-logo.png" alt="Dassault Systèmes Logo" className="h-8 w-auto object-contain" />
+              <img src="/Images/dassault-logo.png" alt="Dassault Systèmes Logo" className="h-10 w-auto object-contain" />
             </div>
             <Link to="/" className="flex items-center space-x-2">
             <Mic className="h-6 w-6 text-primary" />
@@ -54,15 +54,6 @@ function Header() {
               >
                 <Mic className="h-4 w-4" />
                 <span>Analyze</span>
-              </Link>
-              <Link
-                to="/results"
-                className={`flex items-center space-x-2 text-sm font-medium transition-colors hover:text-primary ${
-                  location.pathname === "/results" ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <BarChart2 className="h-4 w-4" />
-                <span>Results</span>
               </Link>
               <Link
                 to="/documentation"

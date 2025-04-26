@@ -236,12 +236,6 @@ export function Results() {
           Your Speech Analysis Results
         </h1>
 
-        {/* Severity Display */}
-        <div className="text-center text-lg md:text-xl font-semibold">
-          Stuttering Severity:{" "}
-          <span className="text-primary">{results.severity}</span>
-        </div>
-
         {/* Severity Classification and Recommendation */}
         {["Moderate", "Severe", "Very Severe"].includes(results.severity) ? (
           <div className="mt-4 bg-red-100 border border-red-300 text-red-800 p-4 rounded-xl shadow-sm text-center">
@@ -255,7 +249,7 @@ export function Results() {
         ) : ["Mild", "Very Mild"].includes(results.severity) ? (
           <div className="mt-4 bg-green-100 border border-green-300 text-green-800 p-4 rounded-xl shadow-sm text-center">
             <p className="text-md md:text-lg font-medium">
-              Your stuttering severity is <strong>{results.severity}</strong>.
+              Your speech fluency is <strong>Normal</strong>.
             </p>
             <p className="mt-1 text-sm md:text-base">
               You’re doing well! Regular practice can help further reduce disfluencies.
@@ -374,11 +368,26 @@ export function Results() {
         Detailed Analysis Results
       </h1>
 
-      {/* Severity Display */}
-      <div className="text-center text-lg md:text-xl font-semibold">
-        Stuttering Severity:{" "}
-        <span className="text-primary">{results.severity}</span>
-      </div>
+      {/* Severity Classification and Recommendation */}
+      {["Moderate", "Severe", "Very Severe"].includes(results.severity) ? (
+          <div className="mt-4 bg-red-100 border border-red-300 text-red-800 p-4 rounded-xl shadow-sm text-center">
+            <p className="text-md md:text-lg font-medium">
+              Based on the analysis, your stuttering severity is <strong>{results.severity}</strong>.
+            </p>
+            <p className="mt-1 text-sm md:text-base">
+              It's recommended that you consult a certified Speech-Language Pathologist (SLP) for further evaluation and support.
+            </p>
+          </div>
+        ) : ["Mild", "Very Mild"].includes(results.severity) ? (
+          <div className="mt-4 bg-green-100 border border-green-300 text-green-800 p-4 rounded-xl shadow-sm text-center">
+            <p className="text-md md:text-lg font-medium">
+              Your speech fluency is <strong>Normal</strong>.
+            </p>
+            <p className="mt-1 text-sm md:text-base">
+              You’re doing well! Regular practice can help further reduce disfluencies.
+            </p> 
+          </div>
+        ) : null}
 
       {/* Spectrogram */}
       <Card>
