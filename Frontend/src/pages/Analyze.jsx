@@ -301,7 +301,7 @@ export function Analyze() {
                       <div>
                         <p className="font-medium">Patient ID: {task.task_id}</p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(task.timestamp).toLocaleString()}
+                          
                         </p>
                       </div>
                       <Button variant="ghost" className="text-primary">

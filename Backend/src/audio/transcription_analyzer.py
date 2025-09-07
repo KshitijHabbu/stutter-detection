@@ -884,262 +884,262 @@ class TranscriptionAnalyzer:
         # Combine metrics
         return (diversity * 0.5) + (min(1.0, avg_word_length / 8) * 0.5)
 
-    def save_all_formats(self, result: TranscriptionResult, output_dir: Path) -> None:
-        """Save analysis results in multiple formats."""
-        try:
-            # Save plain text with detailed analysis
-            self._save_txt(result, output_dir / "transcription.txt")
+    # def save_all_formats(self, result: TranscriptionResult, output_dir: Path) -> None:
+    #     """Save analysis results in multiple formats."""
+    #     try:
+    #         # Save plain text with detailed analysis
+    #         self._save_txt(result, output_dir / "transcription.txt")
 
-            # Save VTT with timing information
-            self._save_vtt(result, output_dir / "transcription.vtt")
+    #         # Save VTT with timing information
+    #         self._save_vtt(result, output_dir / "transcription.vtt")
 
-            # Save TextGrid for Praat analysis
-            self._save_textgrid(result, output_dir / "transcription.TextGrid")
+    #         # Save TextGrid for Praat analysis
+    #         self._save_textgrid(result, output_dir / "transcription.TextGrid")
 
-            # Save detailed JSON analysis
-            self._save_analysis_json(result, output_dir / "analysis.json")
+    #         # Save detailed JSON analysis
+    #         self._save_analysis_json(result, output_dir / "analysis.json")
 
-            # Save summary report
-            self._save_summary_report(result, output_dir / "summary_report.txt")
+    #         # Save summary report
+    #         self._save_summary_report(result, output_dir / "summary_report.txt")
 
-            logger.info(f"All analysis files saved to {output_dir}")
+    #         logger.info(f"All analysis files saved to {output_dir}")
 
-        except Exception as e:
-            logger.error(f"Error saving analysis files: {e}")
-            raise
+    #     except Exception as e:
+    #         logger.error(f"Error saving analysis files: {e}")
+    #         raise
 
-    def _save_analysis_json(
-        self, result: TranscriptionResult, output_path: Path
-    ) -> None:
-        """Save detailed analysis in JSON format."""
-        try:
-            analysis = {
-                "text": result.text,
-                "duration": result.segments[-1]["end"] if result.segments else 0,
-                "word_count": len(result.word_timings),
-                "fillers": {"count": len(result.fillers), "details": result.fillers},
-                "repetitions": {
-                    "count": len(result.repetitions),
-                    "details": result.repetitions,
-                },
-                "pronunciation_errors": {
-                    "count": len(result.pronunciation_errors),
-                    "details": result.pronunciation_errors,
-                },
-                "silences": {
-                    "count": len(
-                        [s for s in result.silences if s.get("is_block", False)]
-                    ),
-                    "details": result.silences,
-                },
-            }
+    # def _save_analysis_json(
+    #     self, result: TranscriptionResult, output_path: Path
+    # ) -> None:
+    #     """Save detailed analysis in JSON format."""
+    #     try:
+    #         analysis = {
+    #             "text": result.text,
+    #             "duration": result.segments[-1]["end"] if result.segments else 0,
+    #             "word_count": len(result.word_timings),
+    #             "fillers": {"count": len(result.fillers), "details": result.fillers},
+    #             "repetitions": {
+    #                 "count": len(result.repetitions),
+    #                 "details": result.repetitions,
+    #             },
+    #             "pronunciation_errors": {
+    #                 "count": len(result.pronunciation_errors),
+    #                 "details": result.pronunciation_errors,
+    #             },
+    #             "silences": {
+    #                 "count": len(
+    #                     [s for s in result.silences if s.get("is_block", False)]
+    #                 ),
+    #                 "details": result.silences,
+    #             },
+    #         }
 
-            with open(output_path, "w", encoding="utf-8") as f:
-                json.dump(analysis, f, indent=2)
+    #         with open(output_path, "w", encoding="utf-8") as f:
+    #             json.dump(analysis, f, indent=2)
 
-        except Exception as e:
-            logger.error(f"Error saving analysis JSON: {e}")
-            raise
+    #     except Exception as e:
+    #         logger.error(f"Error saving analysis JSON: {e}")
+    #         raise
 
-    def _save_textgrid(self, result: TranscriptionResult, output_path: Path) -> None:
-        """Save TextGrid format for Praat analysis."""
-        try:
-            # Create TextGrid
-            textgrid_content = 'File type = "ooTextFile"\nObject class = "TextGrid"\n\n'
-            textgrid_content += f"xmin = 0\nxmax = {result.duration}\n"
-            textgrid_content += "tiers? <exists>\nsize = 4\nitem []:\n"
+    # def _save_textgrid(self, result: TranscriptionResult, output_path: Path) -> None:
+    #     """Save TextGrid format for Praat analysis."""
+    #     try:
+    #         # Create TextGrid
+    #         textgrid_content = 'File type = "ooTextFile"\nObject class = "TextGrid"\n\n'
+    #         textgrid_content += f"xmin = 0\nxmax = {result.duration}\n"
+    #         textgrid_content += "tiers? <exists>\nsize = 4\nitem []:\n"
 
-            # Words tier
-            textgrid_content += self._create_textgrid_tier(
-                "words", result.word_timings, 1
-            )
+    #         # Words tier
+    #         textgrid_content += self._create_textgrid_tier(
+    #             "words", result.word_timings, 1
+    #         )
 
-            # Fillers tier
-            textgrid_content += self._create_textgrid_tier("fillers", result.fillers, 2)
+    #         # Fillers tier
+    #         textgrid_content += self._create_textgrid_tier("fillers", result.fillers, 2)
 
-            # Repetitions tier
-            textgrid_content += self._create_textgrid_tier(
-                "repetitions", result.repetitions, 3
-            )
+    #         # Repetitions tier
+    #         textgrid_content += self._create_textgrid_tier(
+    #             "repetitions", result.repetitions, 3
+    #         )
 
-            # Pronunciation errors tier
-            textgrid_content += self._create_textgrid_tier(
-                "pronunciation", result.pronunciation_errors, 4
-            )
+    #         # Pronunciation errors tier
+    #         textgrid_content += self._create_textgrid_tier(
+    #             "pronunciation", result.pronunciation_errors, 4
+    #         )
 
-            # Write to file
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write(textgrid_content)
+    #         # Write to file
+    #         with open(output_path, "w", encoding="utf-8") as f:
+    #             f.write(textgrid_content)
 
-        except Exception as e:
-            logger.error(f"Error saving TextGrid: {e}")
-            raise
+    #     except Exception as e:
+    #         logger.error(f"Error saving TextGrid: {e}")
+    #         raise
 
-    def _create_textgrid_tier(self, name: str, items: List[Dict], tier_num: int) -> str:
-        """Create a tier for TextGrid."""
-        content = f"    item [{tier_num}]:\n"
-        content += f'        class = "IntervalTier"\n'
-        content += f'        name = "{name}"\n'
-        content += f"        xmin = 0\n"
+    # def _create_textgrid_tier(self, name: str, items: List[Dict], tier_num: int) -> str:
+    #     """Create a tier for TextGrid."""
+    #     content = f"    item [{tier_num}]:\n"
+    #     content += f'        class = "IntervalTier"\n'
+    #     content += f'        name = "{name}"\n'
+    #     content += f"        xmin = 0\n"
 
-        if not items:
-            content += f"        xmax = 0\n"
-            content += f"        intervals: size = 0\n"
-            return content
+    #     if not items:
+    #         content += f"        xmax = 0\n"
+    #         content += f"        intervals: size = 0\n"
+    #         return content
 
-        xmax = max(item.get("end", 0) for item in items)
-        content += f"        xmax = {xmax}\n"
-        content += f"        intervals: size = {len(items)}\n"
+    #     xmax = max(item.get("end", 0) for item in items)
+    #     content += f"        xmax = {xmax}\n"
+    #     content += f"        intervals: size = {len(items)}\n"
 
-        for i, item in enumerate(items, 1):
-            content += f"        intervals [{i}]:\n"
-            content += f"            xmin = {item.get('start', 0)}\n"
-            content += f"            xmax = {item.get('end', 0)}\n"
+    #     for i, item in enumerate(items, 1):
+    #         content += f"        intervals [{i}]:\n"
+    #         content += f"            xmin = {item.get('start', 0)}\n"
+    #         content += f"            xmax = {item.get('end', 0)}\n"
 
-            if "word" in item:
-                text = item["word"]
-            elif "pattern" in item:
-                text = f"REP:{','.join(p['word'] for p in item['pattern'])}"
-            elif "reference" in item:
-                text = f"PRON:{item['word']}->{item['reference']}"
-            else:
-                text = ""
+    #         if "word" in item:
+    #             text = item["word"]
+    #         elif "pattern" in item:
+    #             text = f"REP:{','.join(p['word'] for p in item['pattern'])}"
+    #         elif "reference" in item:
+    #             text = f"PRON:{item['word']}->{item['reference']}"
+    #         else:
+    #             text = ""
 
-            content += f'            text = "{text}"\n'
+    #         content += f'            text = "{text}"\n'
 
-        return content
+    #     return content
 
-    def _format_timestamp(self, seconds: float) -> str:
-        """Convert seconds to VTT timestamp format."""
-        hours = int(seconds // 3600)
-        minutes = int((seconds % 3600) // 60)
-        seconds = seconds % 60
-        return f"{hours:02d}:{minutes:02d}:{seconds:06.3f}"
+    # def _format_timestamp(self, seconds: float) -> str:
+    #     """Convert seconds to VTT timestamp format."""
+    #     hours = int(seconds // 3600)
+    #     minutes = int((seconds % 3600) // 60)
+    #     seconds = seconds % 60
+    #     return f"{hours:02d}:{minutes:02d}:{seconds:06.3f}"
 
-    def _save_vtt(self, result: TranscriptionResult, output_path: Path) -> None:
-        """Save WebVTT format with enhanced timing."""
-        try:
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write("WEBVTT\n\n")
+    # def _save_vtt(self, result: TranscriptionResult, output_path: Path) -> None:
+    #     """Save WebVTT format with enhanced timing."""
+    #     try:
+    #         with open(output_path, "w", encoding="utf-8") as f:
+    #             f.write("WEBVTT\n\n")
 
-                for i, segment in enumerate(result.segments):
-                    start = self._format_timestamp(segment["start"])
-                    end = self._format_timestamp(segment["end"])
-                    f.write(f"{i+1}\n")
-                    f.write(f"{start} --> {end}\n")
-                    f.write(f"{segment['text']}\n\n")
+    #             for i, segment in enumerate(result.segments):
+    #                 start = self._format_timestamp(segment["start"])
+    #                 end = self._format_timestamp(segment["end"])
+    #                 f.write(f"{i+1}\n")
+    #                 f.write(f"{start} --> {end}\n")
+    #                 f.write(f"{segment['text']}\n\n")
 
-        except Exception as e:
-            logger.error(f"Error saving VTT: {e}")
-            raise
+    #     except Exception as e:
+    #         logger.error(f"Error saving VTT: {e}")
+    #         raise
 
-    def _save_txt(self, result: TranscriptionResult, output_path: Path) -> None:
-        """Save detailed text transcription."""
-        try:
-            with open(output_path, "w", encoding="utf-8") as f:
-                # Write header
-                f.write("SPEECH ANALYSIS TRANSCRIPT\n")
-                f.write("=" * 50 + "\n\n")
+    # def _save_txt(self, result: TranscriptionResult, output_path: Path) -> None:
+    #     """Save detailed text transcription."""
+    #     try:
+    #         with open(output_path, "w", encoding="utf-8") as f:
+    #             # Write header
+    #             f.write("SPEECH ANALYSIS TRANSCRIPT\n")
+    #             f.write("=" * 50 + "\n\n")
 
-                # Write metadata
-                f.write(f"Duration: {result.duration:.2f} seconds\n")
-                f.write(f"Speech Rate: {result.speech_rate:.1f} words per minute\n")
-                f.write(f"Language Score: {result.language_score:.2f}/1.0\n")
-                f.write(f"Overall Confidence: {result.confidence:.2f}\n\n")
+    #             # Write metadata
+    #             f.write(f"Duration: {result.duration:.2f} seconds\n")
+    #             f.write(f"Speech Rate: {result.speech_rate:.1f} words per minute\n")
+    #             f.write(f"Language Score: {result.language_score:.2f}/1.0\n")
+    #             f.write(f"Overall Confidence: {result.confidence:.2f}\n\n")
 
-                # Write full text
-                f.write("FULL TRANSCRIPTION:\n")
-                f.write("-" * 20 + "\n")
-                f.write(result.text + "\n\n")
+    #             # Write full text
+    #             f.write("FULL TRANSCRIPTION:\n")
+    #             f.write("-" * 20 + "\n")
+    #             f.write(result.text + "\n\n")
 
-                # Write segments with timestamps
-                f.write("TIMESTAMPED SEGMENTS:\n")
-                f.write("-" * 20 + "\n")
-                for segment in result.segments:
-                    start = self._format_timestamp(segment["start"])
-                    end = self._format_timestamp(segment["end"])
-                    f.write(f"[{start} --> {end}] {segment['text']}\n")
+    #             # Write segments with timestamps
+    #             f.write("TIMESTAMPED SEGMENTS:\n")
+    #             f.write("-" * 20 + "\n")
+    #             for segment in result.segments:
+    #                 start = self._format_timestamp(segment["start"])
+    #                 end = self._format_timestamp(segment["end"])
+    #                 f.write(f"[{start} --> {end}] {segment['text']}\n")
 
-                # Write analysis
-                self._write_analysis_section(f, result)
+    #             # Write analysis
+    #             self._write_analysis_section(f, result)
 
-        except Exception as e:
-            logger.error(f"Error saving TXT: {e}")
-            raise
+    #     except Exception as e:
+    #         logger.error(f"Error saving TXT: {e}")
+    #         raise
 
-    def _write_analysis_section(self, file, result: TranscriptionResult) -> None:
-        """Write detailed analysis section to text file."""
-        file.write("\nDETAILED ANALYSIS:\n")
-        file.write("-" * 20 + "\n\n")
+    # def _write_analysis_section(self, file, result: TranscriptionResult) -> None:
+    #     """Write detailed analysis section to text file."""
+    #     file.write("\nDETAILED ANALYSIS:\n")
+    #     file.write("-" * 20 + "\n\n")
 
-        # Write filler analysis
-        file.write("Filler Words:\n")
-        for filler in result.fillers:
-            start = self._format_timestamp(filler["start"])
-            file.write(f"- '{filler['word']}' at {start} ({filler['filler_type']})\n")
+    #     # Write filler analysis
+    #     file.write("Filler Words:\n")
+    #     for filler in result.fillers:
+    #         start = self._format_timestamp(filler["start"])
+    #         file.write(f"- '{filler['word']}' at {start} ({filler['filler_type']})\n")
 
-        file.write("\nRepetitions:\n")
-        for rep in result.repetitions:
-            start = self._format_timestamp(rep["start"])
-            file.write(f"- '{rep['word']}' repeated {rep['count']} times at {start}\n")
+    #     file.write("\nRepetitions:\n")
+    #     for rep in result.repetitions:
+    #         start = self._format_timestamp(rep["start"])
+    #         file.write(f"- '{rep['word']}' repeated {rep['count']} times at {start}\n")
 
-        file.write("\nPronunciation Errors and Prolongations:\n")
-        for error in result.pronunciation_errors:
-            start = self._format_timestamp(error["start"])
-            if "prolongation" in error.get("event_type", ""):
-                file.write(f"- Prolongation: '{error['word']}' at {start}\n")
-            else:
-                file.write(
-                    f"- '{error['word']}' should be '{error.get('reference', '')}' at {start}\n"
-                )
+    #     file.write("\nPronunciation Errors and Prolongations:\n")
+    #     for error in result.pronunciation_errors:
+    #         start = self._format_timestamp(error["start"])
+    #         if "prolongation" in error.get("event_type", ""):
+    #             file.write(f"- Prolongation: '{error['word']}' at {start}\n")
+    #         else:
+    #             file.write(
+    #                 f"- '{error['word']}' should be '{error.get('reference', '')}' at {start}\n"
+    #             )
 
-        file.write("\nSilences and Blocks:\n")
-        for silence in result.silences:
-            start = self._format_timestamp(silence["start"])
-            end = self._format_timestamp(silence["end"])
-            if silence.get("is_block", False):
-                file.write(
-                    f"- Block: {silence['duration']:.2f}s from {start} to {end}\n"
-                )
-            else:
-                file.write(
-                    f"- Silence: {silence['duration']:.2f}s from {start} to {end}\n"
-                )
+    #     file.write("\nSilences and Blocks:\n")
+    #     for silence in result.silences:
+    #         start = self._format_timestamp(silence["start"])
+    #         end = self._format_timestamp(silence["end"])
+    #         if silence.get("is_block", False):
+    #             file.write(
+    #                 f"- Block: {silence['duration']:.2f}s from {start} to {end}\n"
+    #             )
+    #         else:
+    #             file.write(
+    #                 f"- Silence: {silence['duration']:.2f}s from {start} to {end}\n"
+    #             )
 
-    def _save_summary_report(
-        self, result: TranscriptionResult, output_path: Path
-    ) -> None:
-        """Save concise summary report."""
-        try:
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write("SPEECH ANALYSIS SUMMARY\n")
-                f.write("=" * 30 + "\n\n")
+    # def _save_summary_report(
+    #     self, result: TranscriptionResult, output_path: Path
+    # ) -> None:
+    #     """Save concise summary report."""
+    #     try:
+    #         with open(output_path, "w", encoding="utf-8") as f:
+    #             f.write("SPEECH ANALYSIS SUMMARY\n")
+    #             f.write("=" * 30 + "\n\n")
 
-                # Key metrics
-                f.write("Key Metrics:\n")
-                f.write(f"- Duration: {result.duration:.2f} seconds\n")
-                f.write(f"- Speech Rate: {result.speech_rate:.1f} words/minute\n")
-                f.write(f"- Language Score: {result.language_score:.2f}/1.0\n")
-                f.write(f"- Confidence: {result.confidence:.2f}/1.0\n\n")
+    #             # Key metrics
+    #             f.write("Key Metrics:\n")
+    #             f.write(f"- Duration: {result.duration:.2f} seconds\n")
+    #             f.write(f"- Speech Rate: {result.speech_rate:.1f} words/minute\n")
+    #             f.write(f"- Language Score: {result.language_score:.2f}/1.0\n")
+    #             f.write(f"- Confidence: {result.confidence:.2f}/1.0\n\n")
 
-                # Statistics
-                f.write("Statistics:\n")
-                f.write(f"- Total Words: {len(result.word_timings)}\n")
-                f.write(f"- Filler Words: {len(result.fillers)}\n")
-                f.write(f"- Repetitions: {len(result.repetitions)}\n")
-                f.write(
-                    f"- Prolongations: {len([e for e in result.pronunciation_errors if 'prolongation' in e.get('event_type', '')])}\n"
-                )
-                f.write(
-                    f"- Pronunciation Errors: {len([e for e in result.pronunciation_errors if 'prolongation' not in e.get('event_type', '')])}\n"
-                )
-                f.write(
-                    f"- Blocks: {len([s for s in result.silences if s.get('is_block', False)])}\n"
-                )
-                f.write(
-                    f"- Natural Pauses: {len([s for s in result.silences if not s.get('is_block', False)])}\n"
-                )
+    #             # Statistics
+    #             f.write("Statistics:\n")
+    #             f.write(f"- Total Words: {len(result.word_timings)}\n")
+    #             f.write(f"- Filler Words: {len(result.fillers)}\n")
+    #             f.write(f"- Repetitions: {len(result.repetitions)}\n")
+    #             f.write(
+    #                 f"- Prolongations: {len([e for e in result.pronunciation_errors if 'prolongation' in e.get('event_type', '')])}\n"
+    #             )
+    #             f.write(
+    #                 f"- Pronunciation Errors: {len([e for e in result.pronunciation_errors if 'prolongation' not in e.get('event_type', '')])}\n"
+    #             )
+    #             f.write(
+    #                 f"- Blocks: {len([s for s in result.silences if s.get('is_block', False)])}\n"
+    #             )
+    #             f.write(
+    #                 f"- Natural Pauses: {len([s for s in result.silences if not s.get('is_block', False)])}\n"
+    #             )
 
-        except Exception as e:
-            logger.error(f"Error saving summary report: {e}")
-            raise
+    #     except Exception as e:
+    #         logger.error(f"Error saving summary report: {e}")
+    #         raise

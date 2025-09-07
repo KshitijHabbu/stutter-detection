@@ -5,8 +5,12 @@ import threading
 import ffmpeg
 import shutil
 import base64
+import bcrypt
+import sys
+from bson.objectid import ObjectId
+from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
-from datetime import datetime
+from datetime import datetime,timezone
 from pymongo import MongoClient
 from bson.binary import Binary
 from analyzer import SpeechAnalyzer
@@ -16,12 +20,14 @@ CORS(app)
 
 # MongoDB setup
 client = MongoClient(
-    "mongodb+srv://admin:admin@main.nt92qex.mongodb.net/stutter_db?retryWrites=true&w=majority&appName=main"
+    "mongodb+srv://admin:admin@stutterdb.hdvzwzs.mongodb.net/stutter_db?retryWrites=true&w=majority&appName=stutterdb"
 )
 db = client.stutter_db
 tasks_collection = db["tasks"]
 
 analyzer = SpeechAnalyzer()
+db = client["stutter_db"]
+users_collection = db["users"]
 
 
 def extract_audio(mp4_filepath, wav_filepath):
@@ -86,10 +92,14 @@ def analyze_audio_thread(filepath, task_id, audio_bytes):
             mp4_path = filepath.replace(".wav", ".mp4")
             if os.path.exists(mp4_path):
                 os.remove(mp4_path)
-        if os.path.exists("results"):
-            shutil.rmtree("results")
-        if os.path.exists("uploads"):
-            shutil.rmtree("uploads")
+        # Clean results only for this task
+        task_folder = os.path.join("./results", task_id)
+        if os.path.exists(task_folder):
+            shutil.rmtree(task_folder)
+        # if os.path.exists("./results"):
+        #     shutil.rmtree("./results")
+        # if os.path.exists("./uploads"):
+        #     shutil.rmtree("./uploads")
 
 
 @app.route("/task_status/<task_id>", methods=["GET"])
@@ -168,6 +178,92 @@ def get_result(task_id):
 
     return jsonify(task["result"])
 
+# Ensure UTF-8 for console output (Windows fix)
+sys.stdout.reconfigure(encoding='utf-8')
+
+# Login Route
+@app.route('/api/login', methods=['POST'])
+def login():
+    try:
+        data = request.get_json()
+        email = data.get('email')
+        password = data.get('password')
+        user_type = data.get('userType')
+
+        if not email or not password or not user_type:
+            return jsonify({"error": "Missing fields"}), 400
+
+        user = users_collection.find_one({"email": email.lower(), "userType": user_type})
+        
+        if not user:
+            return jsonify({"error": "Invalid credentials"}), 401
+
+        stored_password = user['password']
+        # Ensure stored password is bytes
+        if isinstance(stored_password, str):
+            stored_password = stored_password.encode('utf-8')
+
+        if bcrypt.checkpw(password.encode('utf-8'), stored_password):
+            # Update last login time
+            users_collection.update_one(
+                {"_id": user["_id"]},
+                {"$set": {"lastLogin": datetime.now(timezone.utc).isoformat()}}
+            )
+            return jsonify({"message": "Logged in successfully"}), 200
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
+
+    except Exception as e:
+        print(f"❌ Login Error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+# Signup Route
+@app.route('/api/signup', methods=['POST'])
+def signup():
+    try:
+        data = request.get_json()
+        name = data.get('name')
+        email = data.get('email')
+        password = data.get('password')
+        user_type = data.get('userType')
+
+        if not name or not email or not password or not user_type:
+            return jsonify({"error": "Missing fields"}), 400
+
+        # Check if the email already exists
+        existing_user = users_collection.find_one({"email": email.lower()})
+        if existing_user:
+            return jsonify({"error": "Email already in use"}), 400
+
+        # Hash the password (store as bytes in MongoDB)
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+        # Create new user object
+        new_user = {
+            "name": name,
+            "email": email.lower(),
+            "password": hashed_password,  # stored as bytes
+            "userType": user_type,
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "updatedAt": datetime.now(timezone.utc).isoformat(),
+            "lastLogin": None,
+            "isActive": True
+        }
+
+        # Insert the user into the database
+        result = users_collection.insert_one(new_user)
+
+        if result.acknowledged:
+            return jsonify({"message": "User created successfully"}), 201
+        else:
+            return jsonify({"error": "Failed to create user"}), 500
+
+    except Exception as e:
+        print(f"❌ Signup Error: {e}")
+        return jsonify({"error": "Internal server error"}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
